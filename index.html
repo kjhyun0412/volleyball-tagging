@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>배구 실시간 기록</title>
+<style>
+:root{--bg:#e9eef5;--surface:#fff;--text:#0f172a;--muted:#64748b;--line:#dde5f0;--home:#2563eb;--away:#ea580c;--ink:#0b1220;font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+:root[data-theme="dark"]{--bg:#0a111f;--surface:#111a2c;--text:#e6edf7;--muted:#9aaccb;--line:#24324d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);min-height:100vh}
+.wrap{max-width:1120px;margin:0 auto;padding:clamp(18px,4vw,44px) 18px 36px}
+.hd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.hd h1{margin:0;font-size:clamp(28px,4.6vw,42px);font-weight:900;letter-spacing:-.8px}.hd p{margin:4px 0 0;color:var(--muted)}
+.hd .lg{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--home),var(--away));display:grid;place-items:center;font-size:24px}
+.bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:auto;gap:14px}
+.t{position:relative;overflow:hidden;border-radius:26px;padding:22px;color:inherit;text-decoration:none;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;transition:transform .15s ease,box-shadow .15s ease}
+a.t:hover,a.t:focus-visible{transform:translateY(-3px);box-shadow:0 18px 36px #0f172a26;outline:none}
+.t.six{grid-column:span 2;grid-row:span 2;min-height:300px;background:linear-gradient(160deg,#3b82f6,#1d4ed8);color:#fff}
+.t.nine{grid-column:span 2;grid-row:span 2;min-height:300px;background:linear-gradient(160deg,#fb923c,#c2410c);color:#fff}
+.t .big{position:absolute;right:10px;top:-24px;font-size:230px;font-weight:900;line-height:1;opacity:.2;pointer-events:none}
+.t h2{margin:0;font-size:32px;font-weight:900;position:relative}.t p{margin:0;opacity:.92;position:relative;max-width:26ch;word-break:keep-all}
+.chips{display:flex;flex-wrap:wrap;gap:6px;position:relative;margin-top:4px}.chips i{font-style:normal;font-size:13px;font-weight:800;padding:3px 10px;border-radius:999px;background:#ffffff2e}
+.go{position:relative;margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.go b.b{display:inline-flex;align-items:center;min-height:46px;padding:0 20px;border-radius:14px;background:#fff;color:#0f172a;font-weight:900}
+.resume{font-size:13px;font-weight:800;background:#ffffff33;border-radius:999px;padding:3px 11px}
+.t.guide{grid-column:span 2;min-height:150px;background:var(--surface);border:1px solid var(--line)}
+.t.video{grid-column:span 2;min-height:150px;background:linear-gradient(90deg,#0b1220f5 12%,#0b1220b3 55%,#0b122066),url("%EA%B0%80%EC%9D%B4%EB%93%9C%EC%98%81%EC%83%81/%EB%B0%B0%EA%B5%AC%EC%95%B1_5%EB%B6%84_%EB%A7%88%EC%8A%A4%ED%84%B0_%EC%8D%B8%EB%84%A4%EC%9D%BC.jpg") center/cover #0b1220;color:#e6edf7;border:0;font:inherit;text-align:left;cursor:pointer;width:100%}
+.t.video:hover,.t.video:focus-visible{transform:translateY(-3px);box-shadow:0 18px 36px #0f172a26;outline:3px solid #fbbf24;outline-offset:2px}
+.t.video small{max-width:34ch}
+.vmodal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:#020617d9}
+.vmodal[hidden]{display:none}
+.vbox{width:min(1100px,100%);display:grid;gap:10px}
+.vtop{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#e6edf7;font-weight:800;font-size:17px}
+.vclose{min-height:44px;padding:0 18px;border-radius:12px;border:1px solid #ffffff55;background:#ffffff1a;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.vclose:hover,.vclose:focus-visible{background:#ffffff33;outline:2px solid #fbbf24}
+.vbox video{display:block;width:100%;max-height:78vh;background:#000;border-radius:14px}
+.t.video .play{position:absolute;right:20px;top:20px;width:60px;height:60px;border-radius:50%;background:#ffffff2e;border:2px solid #ffffffaa;display:grid;place-items:center;font-size:24px;padding-left:4px}
+.badge{display:inline-block;font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;background:#fbbf24;color:#3b2a00;align-self:flex-start}
+.t h3{margin:0;font-size:20px;font-weight:900}.t small{color:var(--muted)}.t.video small{color:#9aaccb}
+.t.info{grid-column:span 4;flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;min-height:0;padding:14px 20px;background:var(--surface);border:1px solid var(--line);border-radius:20px}
+.t.info span{color:var(--muted);font-size:14px}
+@media (max-width:900px){.bento{grid-template-columns:repeat(2,1fr)}.t.six,.t.nine{grid-column:span 2;grid-row:auto;min-height:260px}.t.info{grid-column:span 2}}
+@media (max-width:520px){.bento{grid-template-columns:1fr}.t.six,.t.nine,.t.guide,.t.video,.t.info{grid-column:auto}.t .big{font-size:170px}}
+@media (prefers-reduced-motion:reduce){.t{transition:none}}</style></head><body>
+<div class="wrap">
+  <div class="hd"><div style="display:flex;align-items:center;gap:14px"><div class="lg">🏐</div><div><h1>배구 실시간 기록</h1><p>무엇을 할까요?</p></div></div></div>
+  <div class="bento">
+    <a class="t six" href="배구%20실시간%20분석%20-%206인제.html"><span class="big">6</span><h2>6인제</h2><p>정규 경기를 로테이션 방식으로 기록합니다.</p>
+      <div class="chips"><i>25점 3선승</i><i>로테이션</i></div>
+      <div class="go"><b class="b">기록 시작 →</b><span class="resume" data-resume="r6" hidden>이어서 · <b>0</b>건</span></div></a>
+    <a class="t nine" href="배구%20실시간%20분석%20-%209인제.html"><span class="big">9</span><h2>9인제</h2><p>동호인·생활체육 경기를 서브<br>타순으로 기록합니다.</p>
+      <div class="chips"><i>21점 2선승</i><i>서브 타순</i></div>
+      <div class="go"><b class="b">기록 시작 →</b><span class="resume" data-resume="r9" hidden>이어서 · <b>0</b>건</span></div></a>
+    <a class="t guide" href="배구%20실시간%20기록%20앱%20사용%20가이드.pdf"><span style="font-size:30px">📖</span><h3>사용 가이드</h3><small>선수 등록부터 통계 저장까지, 처음 쓰는 분을 위한 안내서</small></a>
+    <button type="button" class="t video" id="vopen" aria-haspopup="dialog"><span class="play" aria-hidden="true">▶</span><h3>5분 가이드 영상</h3><small>시작하기부터 카메라까지 한 번에<br>5분&nbsp;51초</small></button>
+    <div class="t info" data-filenote hidden><span>🎥</span><span>파일로 열려 있어요. 유튜브 영상은 <b>서버실행.bat</b>으로 열어야 재생됩니다.</span></div>
+  </div>
+</div>
+<div class="vmodal" id="vmodal" role="dialog" aria-modal="true" aria-label="5분 가이드 영상" hidden>
+  <div class="vbox"><div class="vtop"><span>5분 만에 마스터하는 배구 실시간 기록</span><button type="button" class="vclose" id="vclose">✕ 닫기 (Esc)</button></div>
+  <video id="vplayer" controls playsinline preload="none" poster="%EA%B0%80%EC%9D%B4%EB%93%9C%EC%98%81%EC%83%81/%EB%B0%B0%EA%B5%AC%EC%95%B1_5%EB%B6%84_%EB%A7%88%EC%8A%A4%ED%84%B0_%EC%8D%B8%EB%84%A4%EC%9D%BC.jpg" data-src="%EA%B0%80%EC%9D%B4%EB%93%9C%EC%98%81%EC%83%81/%EB%B0%B0%EA%B5%AC%EC%95%B1_5%EB%B6%84_%EB%A7%88%EC%8A%A4%ED%84%B0.mp4">이 브라우저는 영상 재생을 지원하지 않습니다.</video></div>
+</div>
+<script>
+(function(){
+  var open=document.getElementById("vopen"), box=document.getElementById("vmodal"), v=document.getElementById("vplayer"), close=document.getElementById("vclose");
+  function show(){ if(!v.getAttribute("src")) v.setAttribute("src",v.getAttribute("data-src")); box.hidden=false; document.body.style.overflow="hidden"; close.focus(); var pr=v.play(); if(pr&&pr.catch) pr.catch(function(){}); }
+  function hide(){ v.pause(); box.hidden=true; document.body.style.overflow=""; open.focus(); }
+  open.addEventListener("click",show); close.addEventListener("click",hide);
+  box.addEventListener("click",function(e){ if(e.target===box) hide(); });
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&!box.hidden) hide(); });
+})();
+</script>
+<script>
+(function(){
+  try{ if(localStorage.getItem("vb-theme")==="dark") document.documentElement.setAttribute("data-theme","dark"); }catch(e){}
+  function count(key){ try{ var s=JSON.parse(localStorage.getItem(key)); return s&&s.match&&s.match.events?s.match.events.length:0; }catch(e){ return 0; } }
+  [["r6","volleyball-recorder/v1"],["r9","volleyball-recorder-9/v1"]].forEach(function(p){
+    var n=count(p[1]); document.querySelectorAll('[data-resume="'+p[0]+'"]').forEach(function(e){ if(n>0){ e.hidden=false; e.querySelector("b").textContent=n; } });
+  });
+  document.querySelectorAll("[data-filenote]").forEach(function(e){ e.hidden = location.protocol!=="file:"; });
+})();
+</script>
+</body></html>
